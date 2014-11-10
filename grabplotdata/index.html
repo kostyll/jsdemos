@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Grab plot-data</title>
+
+<!--     <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css"> -->
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script type="text/javascript" src="jquery-git2.js"></script>
+    <script type="text/javascript" src="bootstrap.min.js"></script>
+    <script type="text/javascript" src="react-0.12.0.js"></script>
+<!--     // <script type="text/javascript" src="JSXTransformer-0.12.0.js"></script> -->
+    <script type="text/javascript" src="general.js"></script>
+  </head>
+    <body>
+        <div class="container">
+            <div class="row-fluid">
+                <div class="span10">
+                    <div class="row-fluid">
+                        <!-- Loaded image space -->
+                        <h3>Workspace:</h3>
+                        <div id="workspace"></div>
+                        <span class="btn btn-file">
+                            <input id="selected-file" type="file" class="form-control">
+                        </span>
+                        <!-- <button id="load-image" class="btn btn-primary">Load</button> -->
+                        <hr>
+                        <div id="image">
+                            <!-- loaded images -->
+                        </div>
+                    </div>
+                    <div class="row-fluid">
+                        <!-- Plot data -->
+                        <h3>Plot-data:</h3>
+                        <div id="plot-data"></div>
+                    </div>
+                </div>
+                <div class="span2">
+                        <!-- Toolbox -->
+                        <h3>Toolbox:</h3>
+                        <div id="toolbox"></div>
+                </div>
+            </div>
+        </div>
+        <div class="hidden" id="hidden">
+            <img id="hidden-image"/>
+        </div>
+  </body>
+</html>
