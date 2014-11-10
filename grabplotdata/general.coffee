@@ -18,9 +18,9 @@ NumberInput = React.createClass
     render:->
         <form className="form-horizontal">
             <div className="control-group">
-                <label className="control-label" for={@props.name}>{@props.name}</label>
+                <label className="control-label" for={@props.id}>{@props.name}</label>
                 <div className="controls">
-                    <input type="number" className="input-small" id="{@props.name}" onChange={@onChange} placeholder={@props.value} />
+                    <input type="number" className="input-small" id={@props.id} onChange={@onChange} placeholder={@props.value} />
                 </div>
             </div>
         </form>
@@ -55,21 +55,28 @@ PlotOptionsForm = React.createClass
         return <div>
             <p>Options Form {@state.name}</p>
             {items.map (item)->
-                return <NumberInput name=item.name className="", value={item.value}/>
+                return <NumberInput id={item.name+item.id} name=item.name className="", value={item.value}/>
                 }
         </div>
 
 
 ToolBox = React.createClass
     getInitialState:->
+        items = []
+        @props.items.forEach (item,index,arr) ->
+            items.push
+                index: index
+                value: item
+
         {
             activeItem:0
+            items: items
         }
     render: ()->
         <p> toolbox stub </p>
         <div>
-            {@props.items.map (item)->
-                return <PlotOptionsForm name={item}/>
+            {@state.items.map (item)->
+                return <PlotOptionsForm id={item.index} name={item.value}/>
             }
         </div>
 
