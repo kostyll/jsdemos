@@ -16,11 +16,14 @@ NumberInput = React.createClass
         return
 
     render:->
-        group = <div className="form-inline form-group form-horizontal" role="form">
-                    <label >{@props.name}</label>
-                    <input id={@props.id} size="4" className=" form-control" onChange={@onChange} placeholder="0" type="text" />
+        <form className="form-horizontal">
+            <div className="control-group">
+                <label className="control-label" for={@props.name}>{@props.name}</label>
+                <div className="controls">
+                    <input type="number" className="input-small" id="{@props.name}" onChange={@onChange} placeholder={@props.value} />
+                </div>
             </div>
-        return group
+        </form>
 
 PlotOptionsForm = React.createClass
     getInitialState: ()->
@@ -41,19 +44,27 @@ PlotOptionsForm = React.createClass
         }
 
     render: () ->
-        for prop in @state
-            console.log prop
-        items = [@state.x1,@state.x2,@state.y1,@state.y2]
+        items = []
+        for prop in Object.keys(@state)
+            if prop[0] == "x" or prop[0] == "y" or prop[0] == "g"
+                items.push
+                    name: prop
+                    value: @state[prop]
+        
         # console.log items
         return <div>
             <p>Options Form {@state.name}</p>
-            {items.map (number)->
-                return <NumberInput name=number className="", value={number}/>
+            {items.map (item)->
+                return <NumberInput name=item.name className="", value={item.value}/>
                 }
         </div>
 
 
 ToolBox = React.createClass
+    getInitialState:->
+        {
+            activeItem:0
+        }
     render: ()->
         <p> toolbox stub </p>
         <div>
