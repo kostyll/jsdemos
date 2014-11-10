@@ -16,10 +16,11 @@ NumberInput = React.createClass
         return
 
     render:->
-        <div className="form-group form-inline">
-            <label for={@props.name}>{@props.name}</label>
-            <input className={@props.className+" form-control"} onChange={@onChange} placeholder="0" value={@state.value}/>
-        </div>
+        group = <div className="form-inline form-group form-horizontal" role="form">
+                    <label >{@props.name}</label>
+                    <input id={@props.id} size="4" className=" form-control" onChange={@onChange} placeholder="0" type="text" />
+            </div>
+        return group
 
 PlotOptionsForm = React.createClass
     getInitialState: ()->
@@ -40,6 +41,8 @@ PlotOptionsForm = React.createClass
         }
 
     render: () ->
+        for prop in @state
+            console.log prop
         items = [@state.x1,@state.x2,@state.y1,@state.y2]
         # console.log items
         return <div>
