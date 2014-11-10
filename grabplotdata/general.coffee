@@ -2,6 +2,63 @@
 # cjsx -b -p -c general.coffee > general.js
 # https://github.com/jsdf/coffee-react
 
+NumberInput = React.createClass
+    getInitialState:->
+        {
+            value:0
+        }
+
+    onChange: (event)->
+        console.log event
+        @setStage
+            value: event.target.value
+        return
+
+    render:->
+        <div className="form-group">
+            <label for={@props.name}>{@props.name}</label>
+            <input className={@props.className+" form-control"} onChange={@onChange} placeholder="0" value={@props.value}/>
+        </div>
+
+PlotOptionsForm = React.createClass
+    getInitialState: ()->
+        {
+            activated: false
+            color: null
+            x1:0
+            x2:0
+            y1:0
+            y2:0
+            gx1:0
+            gx2:0
+            gy1:0
+            gy2:0
+            points:[]
+            name: @props.name or ""
+            title: @props.title or "untitled"
+        }
+
+    render: () ->
+        items = [@state.x1,@state.x2,@state.y1,@state.y2]
+        # console.log items
+        return <div>
+            <p>Options Form {@state.name}</p>
+            {items.map (number)->
+                return <NumberInput name=number className="", value={number}/>
+                }
+        </div>
+
+
+ToolBox = React.createClass
+    render: ()->
+        <p> toolbox stub </p>
+        <div>
+            {@props.items.map (item)->
+                return <PlotOptionsForm name={item}/>
+            }
+        </div>
+
+
 State = () ->
     @file_image = null
     @state = "start"
@@ -68,6 +125,9 @@ image_click_handler = (e) ->
 
 
 prepare = ()->
+    items = ["item1","item2","item3"]
+    React.render(<ToolBox items={items}/>,document.getElementById("toolbox"))
+
     state.canvas = new fabric.Canvas("image")
     state.image_left = state.canvas._offset.left
     state.image_top = state.canvas._offset.top
