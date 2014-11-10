@@ -19,6 +19,7 @@ State = () ->
     @ctx = 0
     @image_matrix = null
     @source_image = null
+    @canvas = null
 
 State::changeState = (state)->
     that = @
@@ -49,9 +50,28 @@ state = new State()
 
 image_click_handler = (e) ->
     console.log "Image clicked"
-    console.log state.get_image_coordinates_from_client(e.clientX,e.clientY)
+    console.log e
+    e = e.e
+    # console.log e
+    coordinate = state.get_image_coordinates_from_client(e.clientX,e.clientY)
+    x = coordinate[0]
+    y = coordinate[1]
+
+    R = 3
+
+    circle = new fabric.Circle
+        left : x - R // 2
+        top : y - R //2
+        radius: R
+        fill: "red"
+    state.canvas.add(circle)
+
 
 prepare = ()->
+    state.canvas = new fabric.Canvas("image")
+    state.image_left = state.canvas._offset.left
+    state.image_top = state.canvas._offset.top
+    state.canvas.on('mouse:down',image_click_handler)
     state.source_image = document.getElementById("image")
     document.getElementById("selected-file").addEventListener "change", (event)->
         state.file_image = event.target.files[0]
@@ -61,25 +81,21 @@ prepare = ()->
         reader = new FileReader()
         reader.onload = (e)->
             image = new Image()
-            canvas = document.createElement("canvas")
 
             image.id ="image-data"
             image.onload = ->
-                canvas.width = image.width
-                canvas.height = image.height
-                ctx = canvas.getContext("2d")
-                ctx.drawImage(image,0,0,600,400)
-                while state.source_image.firstChild
-                    state.source_image.removeChild(state.source_image.firstChild)
-                state.source_image.appendChild(canvas)
-                state.change_image(canvas)
-                state.canvas = canvas
-                state.context = ctx
-                state.image_matrix = new ImageMatrix(ctx.getImageData(0,0,canvas.width,canvas.height))
+                imgObj = new fabric.Image(image)
+                imgObj.set
+                    angle: 0
+                    width: 600
+                    height: 400
+                state.canvas.centerObject(imgObj)
+                state.canvas.add(imgObj)
+
+                state.canvas.renderAll()
                 return
 
             image.src = reader.result
-            canvas.onclick = image_click_handler
             return
         reader.readAsDataURL(state.file_image)
         return
