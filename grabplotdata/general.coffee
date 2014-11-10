@@ -5,19 +5,20 @@
 NumberInput = React.createClass
     getInitialState:->
         {
-            value:0
+            value:@props.value or 0
         }
 
     onChange: (event)->
-        console.log event
-        @setStage
+        # console.log event
+        # console.log event.target.value
+        @setState
             value: event.target.value
         return
 
     render:->
-        <div className="form-group">
+        <div className="form-group form-inline">
             <label for={@props.name}>{@props.name}</label>
-            <input className={@props.className+" form-control"} onChange={@onChange} placeholder="0" value={@props.value}/>
+            <input className={@props.className+" form-control"} onChange={@onChange} placeholder="0" value={@state.value}/>
         </div>
 
 PlotOptionsForm = React.createClass
