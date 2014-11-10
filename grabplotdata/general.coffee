@@ -17,6 +17,8 @@ State = () ->
     @image_height = 0
     @canvas = null
     @ctx = 0
+    @image_matrix = null
+    @source_image = null
 
 State::changeState = (state)->
     that = @
@@ -32,10 +34,16 @@ State::change_image = (image_html_el) ->
     console.log @
 
 State::get_image_coordinates_from_client = (clientX,clientY) ->
-    that = @
-    x = clientX - that.image_left
-    y = clientY - that.image_top
+    x = clientX - @image_left
+    y = clientY - @image_top
     return [x,y]
+
+ImageMatrix = (data) ->
+    @source_data = data
+    @width = data.width
+    @height = data.height
+
+    # console.log @
 
 state = new State()
 
@@ -44,10 +52,10 @@ image_click_handler = (e) ->
     console.log state.get_image_coordinates_from_client(e.clientX,e.clientY)
 
 prepare = ()->
+    state.source_image = document.getElementById("image")
     document.getElementById("selected-file").addEventListener "change", (event)->
         state.file_image = event.target.files[0]
         selected_file = document.getElementById("selected-file")
-        source_image = document.getElementById("image")
         console.log "Uploading image"
         console.log state.file_image
         reader = new FileReader()
@@ -60,13 +68,14 @@ prepare = ()->
                 canvas.width = image.width
                 canvas.height = image.height
                 ctx = canvas.getContext("2d")
-                ctx.drawImage(image,0,0)
-                while source_image.firstChild
-                    source_image.removeChild(source_image.firstChild)
-                source_image.appendChild(canvas)
+                ctx.drawImage(image,0,0,600,400)
+                while state.source_image.firstChild
+                    state.source_image.removeChild(state.source_image.firstChild)
+                state.source_image.appendChild(canvas)
                 state.change_image(canvas)
                 state.canvas = canvas
                 state.context = ctx
+                state.image_matrix = new ImageMatrix(ctx.getImageData(0,0,canvas.width,canvas.height))
                 return
 
             image.src = reader.result
