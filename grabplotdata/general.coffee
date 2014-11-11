@@ -2,10 +2,11 @@
 # cjsx -b -p -c general.coffee > general.js
 # https://github.com/jsdf/coffee-react
 
-NumberInput = React.createClass
+LabeledInput = React.createClass
     getInitialState:->
         {
             value:@props.value or 0
+            label:@props.label or @props.name
         }
 
     onChange: (event)->
@@ -19,9 +20,9 @@ NumberInput = React.createClass
     render:->
         <form className="form-horizontal">
             <div className="control-group">
-                <label className="control-label" for={@props.id}>{@props.name}</label>
+                <label className="control-label" for={@props.id}>{@state.label}</label>
                 <div className="controls">
-                    <input type="text" className="input-small" id={@props.id} onChange={@onChange} placeholder={@props.value} />
+                    <input type="text" className={@props.className+" input-small"} id={@props.id} onChange={@onChange} placeholder={@props.value} />
                 </div>
             </div>
         </form>
@@ -67,14 +68,26 @@ PlotOptionsForm = React.createClass
     handleCalibrate: (event) ->
         console.log "Calibrate"
         console.log event
+        @props.onChangeState
+            name: "calibrate"
+            callback: ()->
+                console.log arguments
 
     handleDetectPoints:(event)->
         console.log "Detecting points"
+        @props.onChangeState
+            name: "detect"
+            callback: ()->
+                console.log arguments
 
     handleChoisePoints:(event)->
         console.log "Choising points"
+        @props.onChangeState
+            name: "select"
+            callback: ()->
+                console.log arguments
 
-    updateNumberInput: (name,value)->
+    updateLabeledInput: (name,value)->
         state = @state
         state[name] = value
         @setState state
@@ -86,14 +99,15 @@ PlotOptionsForm = React.createClass
         s = @state
         if s.activated == true
             return <div>
-                    <button className="btn btn-small" onClick={@handleSelectColor}>Select color</button>
-                    <button className="btn btn-small" onClick={@handleCalibrate}>Calibrate</button>
-                    <button className="btn btn-small" onClick={@handleDetectPoints}>Detect points</button>
-                    <button className="btn btn-small" onClick={@handleChoisePoints}>Choise plot points</button>
-                <NumberInput id={@props.id} name="gx1" value={s.gx1} onChange={@updateNumberInput}/>
-                <NumberInput id={@props.id} name="gx2" value={s.gx2} onChange={@updateNumberInput}/>
-                <NumberInput id={@props.id} name="gy1" value={s.gy1} onChange={@updateNumberInput}/>
-                <NumberInput id={@props.id} name="gy2" value={s.gy2} onChange={@updateNumberInput}/>
+                <LabeledInput label="Plot name" id={@props.id} name={"name"} value={@state.name} onChange={@updateLabeledInput}/>
+                <button className="btn btn-small" onClick={@handleSelectColor}>Select color</button>
+                <button className="btn btn-small" onClick={@handleCalibrate}>Calibrate</button>
+                <button className="btn btn-small" onClick={@handleDetectPoints}>Detect points</button>
+                <button className="btn btn-small" onClick={@handleChoisePoints}>Choise plot points</button>
+                <LabeledInput id={@props.id} name="gx1" value={s.gx1} onChange={@updateLabeledInput}/>
+                <LabeledInput id={@props.id} name="gx2" value={s.gx2} onChange={@updateLabeledInput}/>
+                <LabeledInput id={@props.id} name="gy1" value={s.gy1} onChange={@updateLabeledInput}/>
+                <LabeledInput id={@props.id} name="gy2" value={s.gy2} onChange={@updateLabeledInput}/>
             </div>
         else
             return <div>
@@ -116,6 +130,7 @@ ToolBox = React.createClass
         }
 
     componentDidMount:->
+
         console.log @props
 
     addNewPlot:->
@@ -138,6 +153,7 @@ ToolBox = React.createClass
                     onAfterDidMountPlot={that.props.onAfterDidMountPlot}
                     onActivatePlot={that.props.onActivatePlot}
                     activated={item.index==that.props.activePlot}
+                    onChangeState={that.props.onChangeState}
                 />
             }
         </div>
@@ -145,6 +161,7 @@ ToolBox = React.createClass
 
 WorkSpace = React.createClass
     selectFileHandler:(event)->
+        that = @
         state.file_image = event.target.files[0]
         selected_file = document.getElementById("selected-file")
         console.log "Uploading image"
@@ -164,6 +181,7 @@ WorkSpace = React.createClass
                 state.canvas.add(imgObj)
 
                 state.canvas.renderAll()
+                that.props.onImageLoad(imgObj)
                 return
 
             image.src = reader.result
@@ -205,7 +223,14 @@ DemoPage = React.createClass
             lastplot: 0
             workspace: null
             putNewPoints: true
+            state:null
+            image:null
         }
+
+    onChangeState:(state)->
+        console.log state
+        @setState
+            state:state
 
     onActivatePlot:(index)->
         console.log "Activating..."
@@ -227,6 +252,10 @@ DemoPage = React.createClass
         @setState
             workspace:workspace
 
+    onImageLoad:(image)->
+        @setState
+            image:image
+
     switchOnPlotPointsPut:->
         @setState
             putNewPoints:true
@@ -242,24 +271,43 @@ DemoPage = React.createClass
             @switchOffPlotPointsPut
 
     image_click_handler: (e) ->
-        console.log "Image clicked"
-        console.log e
-        e = e.e
-        # console.log e
-        coordinate = state.get_image_coordinates_from_client(e.clientX,e.clientY)
-        x = coordinate[0]
-        y = coordinate[1]
+        console.log @state
+        if @state.image != null
+            console.log "Image clicked"
+            console.log e
+            e = e.e
+            # console.log e
+            coordinate = state.get_image_coordinates_from_client(e.clientX,e.clientY)
+            x = coordinate[0]
+            y = coordinate[1]
 
-        R = 3
+            s = @state.state
 
-        if @state.putNewPoints
-            circle = new fabric.Circle
-                left : x - R // 2
-                top : y - R //2
-                radius: R
-                fill: "red"
-            state.canvas.add(circle)
-        # console.log @state
+            if s.name == "calibrate"
+                # put point to calibrate
+                s.callback x,y
+
+            else if s.name == "detect"
+                # detect plot
+
+            else if s.name == "select"
+                # select custom points
+
+            else if s == null
+
+                R = 3
+
+                if @state.putNewPoints
+                    circle = new fabric.Circle
+                        left : x - R // 2
+                        top : y - R //2
+                        radius: R
+                        fill: "red"
+                    state.canvas.add(circle)
+                # console.log @state
+        else
+            console.log "Not image loaded"
+            alert "Not image loaded"
 
     componentDidMount:->
         state.canvas = new fabric.Canvas("image")
@@ -272,7 +320,10 @@ DemoPage = React.createClass
     render: ()->
         <div className="row-fluid">
                 <div className="span10">
-                    <WorkSpace onAfterDidMountWorkSpace={@onAfterDidMountWorkSpace}/>
+                    <WorkSpace
+                        onAfterDidMountWorkSpace={@onAfterDidMountWorkSpace}
+                        onImageLoad={@onImageLoad}
+                    />
                     <PlotData />
                 </div>
                 <div className="span2">
@@ -281,6 +332,7 @@ DemoPage = React.createClass
                         items={@props.items}
                         onAfterDidMountPlot={@onAfterDidMountPlot}
                         onActivatePlot={@onActivatePlot}
+                        onChangeState={@onChangeState}
                     />
                 </div>
             </div>
@@ -339,7 +391,7 @@ state = new State()
 
 
 prepare = ()->
-    items = ["item1","item2","item3"]
+    items = ["Untitled0",]
     React.render(<DemoPage items={items}/>,document.getElementById("container"))
 
 document.onready = prepare
