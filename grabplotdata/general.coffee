@@ -28,8 +28,10 @@ NumberInput = React.createClass
 
 PlotOptionsForm = React.createClass
     getInitialState: ()->
-        {
-            activated: false
+        console.log "Plot props"
+        console.log @props
+        return {
+            activated: @props.activated
             color: null
             x1:0
             x2:0
@@ -43,45 +45,68 @@ PlotOptionsForm = React.createClass
             name: @props.name or ""
             title: @props.title or "untitled"
         }
+    componentDidMount:->
+        @props.onAfterDidMountPlot(@)
+
+    HeadClickHandler:->
+        activated = @state.activated
+        if activated == true
+            activated = false
+        else
+            activated = true
+        @setState
+            activated: activated
+        @props.onActivatePlot(@props.id)
+        return
+
+    renderHead:->
+        <button className="btn btn-primary" onClick={@HeadClickHandler}>{@state.name}</button>
 
     render: () ->
-        # items = []
-        # for prop in Object.keys(@state)
-        #     if prop[0] == "x" or prop[0] == "y" or prop[0] == "g"
-        #         items.push
-        #             name: prop
-        #             value: @state[prop]
-
-        # console.log items
         s = @state
-        return <div>
-            <p>Options Form {@state.name}</p>
-            <NumberInput id={@props.id} name="gx1" value={s.gx1}/>
-            <NumberInput id={@props.id} name="gx2" value={s.gx2}/>
-            <NumberInput id={@props.id} name="gy1" value={s.gy1}/>
-            <NumberInput id={@props.id} name="gy2" value={s.gy2}/>
-        </div>
+        if s.activated == true
+            return <div>
+                {@renderHead()}
+                <NumberInput id={@props.id} name="gx1" value={s.gx1}/>
+                <NumberInput id={@props.id} name="gx2" value={s.gx2}/>
+                <NumberInput id={@props.id} name="gy1" value={s.gy1}/>
+                <NumberInput id={@props.id} name="gy2" value={s.gy2}/>
+            </div>
+        else
+            return <div>
+                {@renderHead()}
+            </div>
 
 
 ToolBox = React.createClass
     getInitialState:->
+        console.log @props
         items = []
         @props.items.forEach (item,index,arr) ->
             items.push
                 index: index
                 value: item
 
-        console.log @props.parent.state.plots
-
-        {
-            activeItem:0
+        return {
+            activeItem: 0
             items: items
         }
-    render: ()->
+
+    componentDidMount:->
+        console.log @props
+
+    render:->
+        that = @
         <div id="toolbox">
             <h3>Toolbox:</h3>
             {@state.items.map (item)->
-                return <PlotOptionsForm id={item.index} name={item.value}/>
+                return <PlotOptionsForm
+                    id={item.index}
+                    name={item.value}
+                    onAfterDidMountPlot={that.props.onAfterDidMountPlot}
+                    onActivatePlot={that.props.onActivatePlot}
+                    activated={item.index==that.props.activePlot}
+                />
             }
         </div>
 
@@ -142,9 +167,26 @@ PlotData = React.createClass
 DemoPage = React.createClass
     getInitialState: ()->
         {
-            activePlot: 0
+            activePlot:0
             plots: []
+            lastplot: 0
         }
+
+    onActivatePlot:(index)->
+        console.log "Activating..."
+        console.log index
+        @state.plots[@state.activePlot].setState
+            activated: false
+        @setState
+            activePlot: index
+
+    onAfterDidMountPlot:(plot_data)->
+        plots = @state.plots
+        plots.push plot_data
+        @setState
+            plots: plots
+        console.log "Plot added"
+        console.log @state
 
     image_click_handler: (e) ->
         console.log "Image clicked"
@@ -170,6 +212,7 @@ DemoPage = React.createClass
         state.image_top = state.canvas._offset.top
         state.source_image = document.getElementById("image")
         state.canvas.on('mouse:down',@image_click_handler)
+        console.log @state
 
     render: ()->
         <div className="row-fluid">
@@ -178,7 +221,12 @@ DemoPage = React.createClass
                     <PlotData />
                 </div>
                 <div className="span2">
-                    <ToolBox items={@props.items} parent={@} />
+                    <ToolBox
+                        activePlot=@state.activePlot
+                        items={@props.items}
+                        onAfterDidMountPlot={@onAfterDidMountPlot}
+                        onActivatePlot={@onActivatePlot}
+                    />
                 </div>
             </div>
 
