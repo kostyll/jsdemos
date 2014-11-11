@@ -35,6 +35,7 @@ PlotOptionsForm = React.createClass
         return {
             activated: @props.activated
             color: null
+            calibrated:@props.calibrated
             calibrateData:
                 currentIndex:0
                 x1:0
@@ -49,7 +50,9 @@ PlotOptionsForm = React.createClass
             name: @props.name or ""
             title: @props.title or "untitled"
         }
+
     componentDidMount:->
+
         @props.onAfterDidMountPlot(@)
 
     HeadClickHandler:->
@@ -67,6 +70,40 @@ PlotOptionsForm = React.createClass
         console.log "Selecting color"
         console.log event
 
+    transformPixelToPoint: (pixel)->
+        x = pixel.x
+        y = pixel.y
+
+        console.log pixel
+
+        s = @state
+        c = s.calibrateData
+        x1 = Number c.x1
+        x2 = Number c.x2
+        y1 = Number c.y1
+        y2 = Number c.y2
+
+        gx1 = Number s.gx1
+        gx2 = Number s.gx2
+        gy1 = Number s.gy1
+        gy2 = Number s.gy2
+
+        console.log [
+            x1,x2,y1,y2
+        ]
+
+        console.log [
+            gx1,gx2,gy1,gy2
+        ]
+
+        px = ((1.0*x)/(x2-x1))*(gx2-gx1)
+
+        py = (1.0-(1.0*y)/(y1-y2))*(gy2-gy1)
+        return {
+                x:px
+                y:py
+            }
+
     handleCalibrate: (event) ->
         that = @
         console.log "Calibrate"
@@ -77,6 +114,7 @@ PlotOptionsForm = React.createClass
                 console.log arguments
                 calibrateData = that.state.calibrateData
                 index = calibrateData.currentIndex
+                calibrated = false
                 if index == 0
                     calibrateData.x1 = x
                 else if index == 1
@@ -90,9 +128,11 @@ PlotOptionsForm = React.createClass
                     index = 0
                     that.props.onChangeState null
                     console.log "on changeState null"
+                    calibrated = true
                     alert "Done"
                 calibrateData.currentIndex = index
                 that.setState
+                    calibrated: calibrated
                     calibrateData:calibrateData
 
     handleDetectPoints:(event)->
@@ -104,10 +144,29 @@ PlotOptionsForm = React.createClass
 
     handleChoisePoints:(event)->
         console.log "Choising points"
+        that = @
+        if that.state.calibrated == false
+            alert "Not calibrated"
+            return
         @props.onChangeState
             name: "select"
-            callback: ()->
+            callback: (x,y)->
+                if that.state.calibrated == false
+                    alert "Not calibrated"
+                    return
                 console.log arguments
+                points = that.state.points
+                pixel = {
+                    x:x
+                    y:y
+                }
+                point = that.transformPixelToPoint(pixel)
+                points.push point
+                console.log "Point"
+                console.log point
+                # alert point
+                that.setState
+                    points: points
 
     updateLabeledInput: (name,value)->
         state = @state
@@ -115,6 +174,7 @@ PlotOptionsForm = React.createClass
         @setState state
 
     renderHead:->
+
         <button className="btn btn-primary" onClick={@HeadClickHandler}>{@state.name}</button>
 
     render: () ->
@@ -176,6 +236,7 @@ ToolBox = React.createClass
                     onActivatePlot={that.props.onActivatePlot}
                     activated={item.index==that.props.activePlot}
                     onChangeState={that.props.onChangeState}
+                    calibrated={false}
                 />
             }
         </div>
@@ -278,6 +339,10 @@ DemoPage = React.createClass
     onImageLoad:(image)->
         @setState
             image:image
+        for plot in @state.plots
+            plot.setState
+                calibrated: false
+        return
 
     switchOnPlotPointsPut:->
         @setState
@@ -336,6 +401,8 @@ DemoPage = React.createClass
             else if s.name == "select"
                 # select custom points
                 console.log "selecting ..."
+                s.callback x,y
+                @putSelectedPoint(x,y)
             else if s == null
                 #
             else
