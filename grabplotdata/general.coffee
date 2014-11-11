@@ -44,19 +44,21 @@ PlotOptionsForm = React.createClass
         }
 
     render: () ->
-        items = []
-        for prop in Object.keys(@state)
-            if prop[0] == "x" or prop[0] == "y" or prop[0] == "g"
-                items.push
-                    name: prop
-                    value: @state[prop]
-        
+        # items = []
+        # for prop in Object.keys(@state)
+        #     if prop[0] == "x" or prop[0] == "y" or prop[0] == "g"
+        #         items.push
+        #             name: prop
+        #             value: @state[prop]
+
         # console.log items
+        s = @state
         return <div>
             <p>Options Form {@state.name}</p>
-            {items.map (item)->
-                return <NumberInput id={item.name+item.id} name=item.name className="", value={item.value}/>
-                }
+            <NumberInput id={@props.id} name="gx1" value={s.gx1}/>
+            <NumberInput id={@props.id} name="gx2" value={s.gx2}/>
+            <NumberInput id={@props.id} name="gy1" value={s.gy1}/>
+            <NumberInput id={@props.id} name="gy2" value={s.gy2}/>
         </div>
 
 
@@ -80,6 +82,41 @@ ToolBox = React.createClass
             }
         </div>
 
+WorkSpace = React.createClass
+    render: ()->
+        <p>Workspace</p>
+
+PlotData = React.createClass
+    render: ()->
+        <p>Plot data</p>
+
+DemoPage = React.createClass
+    render: ()->
+        <div className="row-fluid">
+                <div className="span10">
+                    <div className="row-fluid">
+                        <h3>Workspace:</h3>
+                        <div id="workspace"></div>
+                        <span className="btn btn-file">
+                            <input id="selected-file" type="file" className="form-control"/>
+                        </span>
+                        <hr/>
+                        <div id="image-container">
+                            <canvas  id="image" width="600px" height="400"></canvas>
+                        </div>
+                    </div>
+                    <div className="row-fluid">
+                        <h3>Plot-data:</h3>
+                        <div id="plot-data"><PlotData /></div>
+                    </div>
+                </div>
+                <div className="span2">
+                        <h3>Toolbox:</h3>
+                        <div id="toolbox">
+                            <ToolBox items={@props.items} />
+                        </div>
+                </div>
+            </div>
 
 State = () ->
     @file_image = null
@@ -148,7 +185,7 @@ image_click_handler = (e) ->
 
 prepare = ()->
     items = ["item1","item2","item3"]
-    React.render(<ToolBox items={items}/>,document.getElementById("toolbox"))
+    React.render(<DemoPage items={items}/>,document.getElementById("container"))
 
     state.canvas = new fabric.Canvas("image")
     state.image_left = state.canvas._offset.left
