@@ -13,6 +13,7 @@ NumberInput = React.createClass
         # console.log event.target.value
         @setState
             value: event.target.value
+        @props.onChange(@props.name,event.target.value)
         return
 
     render:->
@@ -20,7 +21,7 @@ NumberInput = React.createClass
             <div className="control-group">
                 <label className="control-label" for={@props.id}>{@props.name}</label>
                 <div className="controls">
-                    <input type="number" className="input-small" id={@props.id} onChange={@onChange} placeholder={@props.value} />
+                    <input type="text" className="input-small" id={@props.id} onChange={@onChange} placeholder={@props.value} />
                 </div>
             </div>
         </form>
@@ -59,6 +60,25 @@ PlotOptionsForm = React.createClass
         @props.onActivatePlot(@props.id)
         return
 
+    handleSelectColor: (event)->
+        console.log "Selecting color"
+        console.log event
+
+    handleCalibrate: (event) ->
+        console.log "Calibrate"
+        console.log event
+
+    handleDetectPoints:(event)->
+        console.log "Detecting points"
+
+    handleChoisePoints:(event)->
+        console.log "Choising points"
+
+    updateNumberInput: (name,value)->
+        state = @state
+        state[name] = value
+        @setState state
+
     renderHead:->
         <button className="btn btn-primary" onClick={@HeadClickHandler}>{@state.name}</button>
 
@@ -66,11 +86,14 @@ PlotOptionsForm = React.createClass
         s = @state
         if s.activated == true
             return <div>
-                {@renderHead()}
-                <NumberInput id={@props.id} name="gx1" value={s.gx1}/>
-                <NumberInput id={@props.id} name="gx2" value={s.gx2}/>
-                <NumberInput id={@props.id} name="gy1" value={s.gy1}/>
-                <NumberInput id={@props.id} name="gy2" value={s.gy2}/>
+                    <button className="btn btn-small" onClick={@handleSelectColor}>Select color</button>
+                    <button className="btn btn-small" onClick={@handleCalibrate}>Calibrate</button>
+                    <button className="btn btn-small" onClick={@handleDetectPoints}>Detect points</button>
+                    <button className="btn btn-small" onClick={@handleChoisePoints}>Choise plot points</button>
+                <NumberInput id={@props.id} name="gx1" value={s.gx1} onChange={@updateNumberInput}/>
+                <NumberInput id={@props.id} name="gx2" value={s.gx2} onChange={@updateNumberInput}/>
+                <NumberInput id={@props.id} name="gy1" value={s.gy1} onChange={@updateNumberInput}/>
+                <NumberInput id={@props.id} name="gy2" value={s.gy2} onChange={@updateNumberInput}/>
             </div>
         else
             return <div>
@@ -95,10 +118,19 @@ ToolBox = React.createClass
     componentDidMount:->
         console.log @props
 
+    addNewPlot:->
+        items = @state.items
+        items.push
+            index: items.length
+            value: "New plot"
+        @setState
+            items: items
+
     render:->
         that = @
         <div id="toolbox">
             <h3>Toolbox:</h3>
+            <button className="btn btn-large btn-primary" onClick={@addNewPlot}>Add new plot</button>
             {@state.items.map (item)->
                 return <PlotOptionsForm
                     id={item.index}
@@ -141,6 +173,7 @@ WorkSpace = React.createClass
 
     componentDidMount:->
         document.getElementById("selected-file").addEventListener "change",@selectFileHandler
+        @props.onAfterDidMountWorkSpace(@)
 
     render: ()->
         <div className="row-fluid">
@@ -170,6 +203,8 @@ DemoPage = React.createClass
             activePlot:0
             plots: []
             lastplot: 0
+            workspace: null
+            putNewPoints: true
         }
 
     onActivatePlot:(index)->
@@ -188,6 +223,24 @@ DemoPage = React.createClass
         console.log "Plot added"
         console.log @state
 
+    onAfterDidMountWorkSpace:(workspace)->
+        @setState
+            workspace:workspace
+
+    switchOnPlotPointsPut:->
+        @setState
+            putNewPoints:true
+
+    switchOffPlotPointsPut:->
+        @setState
+            putNewPoints:false
+
+    putNewPoints:(flag)->
+        if flag == true
+            @switchOnPlotPointsPut()
+        else
+            @switchOffPlotPointsPut
+
     image_click_handler: (e) ->
         console.log "Image clicked"
         console.log e
@@ -199,12 +252,14 @@ DemoPage = React.createClass
 
         R = 3
 
-        circle = new fabric.Circle
-            left : x - R // 2
-            top : y - R //2
-            radius: R
-            fill: "red"
-        state.canvas.add(circle)
+        if @state.putNewPoints
+            circle = new fabric.Circle
+                left : x - R // 2
+                top : y - R //2
+                radius: R
+                fill: "red"
+            state.canvas.add(circle)
+        # console.log @state
 
     componentDidMount:->
         state.canvas = new fabric.Canvas("image")
@@ -217,7 +272,7 @@ DemoPage = React.createClass
     render: ()->
         <div className="row-fluid">
                 <div className="span10">
-                    <WorkSpace />
+                    <WorkSpace onAfterDidMountWorkSpace={@onAfterDidMountWorkSpace}/>
                     <PlotData />
                 </div>
                 <div className="span2">
