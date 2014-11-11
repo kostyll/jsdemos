@@ -25,6 +25,7 @@ NumberInput = React.createClass
             </div>
         </form>
 
+
 PlotOptionsForm = React.createClass
     getInitialState: ()->
         {
@@ -82,13 +83,18 @@ ToolBox = React.createClass
             }
         </div>
 
+
 WorkSpace = React.createClass
     render: ()->
+
         <p>Workspace</p>
+
 
 PlotData = React.createClass
     render: ()->
+
         <p>Plot data</p>
+
 
 DemoPage = React.createClass
     render: ()->
@@ -117,6 +123,7 @@ DemoPage = React.createClass
                         </div>
                 </div>
             </div>
+
 
 State = () ->
     @file_image = null
