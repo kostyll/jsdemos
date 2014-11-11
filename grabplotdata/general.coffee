@@ -72,7 +72,7 @@ PlotOptionsForm = React.createClass
 
     transformPixelToPoint: (pixel)->
         x = pixel.x
-        y = pixel.y
+        y = 400-pixel.y
 
         console.log pixel
 
@@ -96,9 +96,9 @@ PlotOptionsForm = React.createClass
             gx1,gx2,gy1,gy2
         ]
 
-        px = ((1.0*x)/(x2-x1))*(gx2-gx1)
+        px = gx1+((1.0*x)/Math.abs(x2-x1))*Math.abs(gx2-gx1)
 
-        py = (1.0-(1.0*y)/(y1-y2))*(gy2-gy1)
+        py = gy1+(((1.0*(y))/Math.abs(y1-y2)))*Math.abs(gy2-gy1)
         return {
                 x:px
                 y:py
@@ -120,9 +120,9 @@ PlotOptionsForm = React.createClass
                 else if index == 1
                     calibrateData.x2 = x
                 else if index == 2
-                    calibrateData.y1 = y
+                    calibrateData.y1 = 400-y
                 else if index == 3
-                    calibrateData.y2 = y
+                    calibrateData.y2 = 400-y
                 index = index + 1
                 if index == 4
                     index = 0
@@ -365,6 +365,7 @@ DemoPage = React.createClass
             top : y - R //2
             radius: R
             fill: "red"
+            selectable: false
         state.canvas.add(circle)
 
     putCalibratedPoint:(x,y)->
@@ -375,6 +376,7 @@ DemoPage = React.createClass
             width: 2 * R
             height: 2 * R
             fill: "green"
+            selectable: false
         state.canvas.add(rect)
 
     image_click_handler: (e) ->
