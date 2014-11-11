@@ -35,10 +35,12 @@ PlotOptionsForm = React.createClass
         return {
             activated: @props.activated
             color: null
-            x1:0
-            x2:0
-            y1:0
-            y2:0
+            calibrateData:
+                currentIndex:0
+                x1:0
+                x2:0
+                y1:0
+                y2:0
             gx1:0
             gx2:0
             gy1:0
@@ -66,12 +68,27 @@ PlotOptionsForm = React.createClass
         console.log event
 
     handleCalibrate: (event) ->
+        that = @
         console.log "Calibrate"
         console.log event
         @props.onChangeState
             name: "calibrate"
-            callback: ()->
+            callback: (x,y)->
                 console.log arguments
+                calibrateData = that.state.calibrateData
+                index = calibrateData.currentIndex
+                if index == 0
+                    calibrateData.x1 = x
+                else if index == 1
+                    calibrateData.x2 = x
+                else if index == 2
+                    calibrateData.y1 = y
+                else if index == 3
+                    calibrateData.y2 = y
+                index = index + 1
+                calibrateData.index = index
+                that.setState
+                    calibrateData:calibrateData
 
     handleDetectPoints:(event)->
         console.log "Detecting points"
@@ -270,6 +287,25 @@ DemoPage = React.createClass
         else
             @switchOffPlotPointsPut
 
+    putSelectedPoint:(x,y)->
+        R = 3
+        circle = new fabric.Circle
+            left : x - R // 2
+            top : y - R //2
+            radius: R
+            fill: "red"
+        state.canvas.add(circle)
+
+    putCalibratedPoint:(x,y)->
+        R = 5
+        rect = new fabric.Rect
+            left : x - R // 2
+            top : x - R // 2
+            width: 2 * R
+            height: 2 * R
+            fill: "green"
+        state.canvas.add(rect)
+
     image_click_handler: (e) ->
         console.log @state
         if @state.image != null
@@ -283,28 +319,22 @@ DemoPage = React.createClass
 
             s = @state.state
 
-            if s.name == "calibrate"
+            if s.name=="calibrate"
                 # put point to calibrate
                 s.callback x,y
-
-            else if s.name == "detect"
+                @putCalibratedPoint(x,y)
+            else if s.name=="detect"
                 # detect plot
+                console.log "detecting ..."
 
             else if s.name == "select"
                 # select custom points
-
+                console.log "selecting ..."
             else if s == null
+                #
+            else
+                console.log "Ups.."
 
-                R = 3
-
-                if @state.putNewPoints
-                    circle = new fabric.Circle
-                        left : x - R // 2
-                        top : y - R //2
-                        radius: R
-                        fill: "red"
-                    state.canvas.add(circle)
-                # console.log @state
         else
             console.log "Not image loaded"
             alert "Not image loaded"
