@@ -71,8 +71,10 @@ PlotOptionsForm = React.createClass
         console.log event
 
     transformPixelToPoint: (pixel)->
+        w = 600
+        h = 400
         x = pixel.x
-        y = 400-pixel.y
+        y = h-pixel.y
 
         console.log pixel
 
