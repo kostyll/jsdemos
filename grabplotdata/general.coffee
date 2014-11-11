@@ -71,13 +71,15 @@ ToolBox = React.createClass
                 index: index
                 value: item
 
+        console.log @props.parent.state.plots
+
         {
             activeItem:0
             items: items
         }
     render: ()->
-        <p> toolbox stub </p>
-        <div>
+        <div id="toolbox">
+            <h3>Toolbox:</h3>
             {@state.items.map (item)->
                 return <PlotOptionsForm id={item.index} name={item.value}/>
             }
@@ -86,41 +88,42 @@ ToolBox = React.createClass
 
 WorkSpace = React.createClass
     render: ()->
-
-        <p>Workspace</p>
+        <div className="row-fluid">
+            <h3>Workspace:</h3>
+            <div id="workspace"></div>
+            <span className="btn btn-file">
+                <input id="selected-file" type="file" className="form-control"/>
+            </span>
+            <hr/>
+            <div id="image-container">
+                <canvas  id="image" width="600px" height="400"></canvas>
+            </div>
+        </div>
 
 
 PlotData = React.createClass
     render: ()->
-
-        <p>Plot data</p>
+        <div className="row-fluid">
+            <h3>Plot-data:</h3>
+            <div id="plot-data"></div>
+        </div>
 
 
 DemoPage = React.createClass
+    getInitialState: ()->
+        {
+            activePlot: 0
+            plots: []
+        }
+
     render: ()->
         <div className="row-fluid">
                 <div className="span10">
-                    <div className="row-fluid">
-                        <h3>Workspace:</h3>
-                        <div id="workspace"></div>
-                        <span className="btn btn-file">
-                            <input id="selected-file" type="file" className="form-control"/>
-                        </span>
-                        <hr/>
-                        <div id="image-container">
-                            <canvas  id="image" width="600px" height="400"></canvas>
-                        </div>
-                    </div>
-                    <div className="row-fluid">
-                        <h3>Plot-data:</h3>
-                        <div id="plot-data"><PlotData /></div>
-                    </div>
+                    <WorkSpace />
+                    <PlotData />
                 </div>
                 <div className="span2">
-                        <h3>Toolbox:</h3>
-                        <div id="toolbox">
-                            <ToolBox items={@props.items} />
-                        </div>
+                    <ToolBox items={@props.items} parent={@} />
                 </div>
             </div>
 
