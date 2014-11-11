@@ -86,7 +86,12 @@ PlotOptionsForm = React.createClass
                 else if index == 3
                     calibrateData.y2 = y
                 index = index + 1
-                calibrateData.index = index
+                if index == 4
+                    index = 0
+                    that.props.onChangeState null
+                    console.log "on changeState null"
+                    alert "Done"
+                calibrateData.currentIndex = index
                 that.setState
                     calibrateData:calibrateData
 
@@ -194,6 +199,7 @@ WorkSpace = React.createClass
                     angle: 0
                     width: 600
                     height: 400
+                    selectable: false
                 state.canvas.centerObject(imgObj)
                 state.canvas.add(imgObj)
 
@@ -300,7 +306,7 @@ DemoPage = React.createClass
         R = 5
         rect = new fabric.Rect
             left : x - R // 2
-            top : x - R // 2
+            top : y - R // 2
             width: 2 * R
             height: 2 * R
             fill: "green"
@@ -312,7 +318,7 @@ DemoPage = React.createClass
             console.log "Image clicked"
             console.log e
             e = e.e
-            # console.log e
+            console.log e
             coordinate = state.get_image_coordinates_from_client(e.clientX,e.clientY)
             x = coordinate[0]
             y = coordinate[1]
