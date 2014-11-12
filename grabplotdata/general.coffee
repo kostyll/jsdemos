@@ -158,6 +158,9 @@ PlotOptionsForm = React.createClass
         px = rgx1+((1.0*x)/Math.abs(rx2-rx1))*Math.abs(rgx2-rgx1)
 
         py = rgy1+(((1.0*(y))/Math.abs(ry2-ry1)))*Math.abs(rgy2-rgy1)
+        # console.log [
+        #     px,py
+        # ]
         return {
                 x:px
                 y:py
@@ -209,7 +212,7 @@ PlotOptionsForm = React.createClass
             return
         @props.onChangeState
             name: "select"
-            callback: (x,y)->
+            callback: (x,y,obj)->
                 if that.state.calibrated == false
                     alert "Not calibrated"
                     return
@@ -220,6 +223,7 @@ PlotOptionsForm = React.createClass
                     y:y
                 }
                 point = that.transformPixelToPoint(pixel)
+                point.obj = obj
                 points.push point
                 console.log "Point"
                 console.log point
@@ -232,13 +236,35 @@ PlotOptionsForm = React.createClass
         state[name] = value
         @setState state
 
+    showOwnPoints:->
+        console.log "Showing points"
+        points = @state.points
+        for point in points
+            # state.canvas.add(point.obj)
+            # console.log ""
+            point.obj.bringToFront()
+        if state.canvas is not null
+            state.canvas.renderAll()
+
+    hideOwnPoints:->
+        console.log "Hiding points"
+        points = @state.points
+        for point in points
+            # state.canvas.remove(point.obj)
+            # point.obj.setVisible(false)
+            point.obj.sendBackwards(true)
+        if state.canvas is not null
+            state.canvas.renderAll()
+
     renderHead:->
 
         <button className="btn btn-primary" onClick={@HeadClickHandler}>{@state.name}</button>
 
     render: () ->
         s = @state
+        console.log @state.points
         if s.activated == true
+            @showOwnPoints()
             return <div>
                 <LabeledInput label="Plot name" id={@props.id} name={"name"} value={@state.name} onChange={@updateLabeledInput}/>
                 <button className="btn btn-small" onClick={@handleSelectColor}>Select color</button>
@@ -251,6 +277,7 @@ PlotOptionsForm = React.createClass
                 <LabeledInput id={@props.id} name="gy2" value={s.gy2} onChange={@updateLabeledInput}/>
             </div>
         else
+            @hideOwnPoints()
             return <div>
                 {@renderHead()}
             </div>
@@ -417,7 +444,7 @@ DemoPage = React.createClass
         else
             @switchOffPlotPointsPut
 
-    putSelectedPoint:(x,y)->
+    putSelectedPoint:(x,y,callback)->
         R = 3
         circle = new fabric.Circle
             left : x - R // 2
@@ -426,6 +453,7 @@ DemoPage = React.createClass
             fill: "red"
             selectable: false
         state.canvas.add(circle)
+        callback(x,y,circle)
 
     putCalibratedPoint:(x,y)->
         R = 5
@@ -462,8 +490,7 @@ DemoPage = React.createClass
             else if s.name == "select"
                 # select custom points
                 console.log "selecting ..."
-                s.callback x,y
-                @putSelectedPoint(x,y)
+                @putSelectedPoint(x,y,s.callback)
             else if s == null
                 #
             else
