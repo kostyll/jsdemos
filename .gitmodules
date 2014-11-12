@@ -1,0 +1,3 @@
+[submodule "excellentexport"]
+	path = excellentexport
+	url = git@github.com:jmaister/excellentexport.git
