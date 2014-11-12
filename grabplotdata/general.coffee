@@ -42,6 +42,7 @@ PlotOptionsForm = React.createClass
                 x2:0
                 y1:0
                 y2:0
+                pointObjects:[]
             gx1:0
             gx2:0
             gy1:0
@@ -172,19 +173,26 @@ PlotOptionsForm = React.createClass
         console.log event
         @props.onChangeState
             name: "calibrate"
-            callback: (x,y)->
+            callback: (x,y,obj)->
                 console.log arguments
                 calibrateData = that.state.calibrateData
                 index = calibrateData.currentIndex
                 calibrated = false
                 if index == 0
+                    for point in calibrateData.pointObjects
+                        state.canvas.remove(point)
+                    calibrateData.pointObjects = []
                     calibrateData.x1 = x
+                    calibrateData.pointObjects.push obj
                 else if index == 1
                     calibrateData.x2 = x
+                    calibrateData.pointObjects.push obj
                 else if index == 2
                     calibrateData.y1 = 400-y
+                    calibrateData.pointObjects.push obj
                 else if index == 3
                     calibrateData.y2 = 400-y
+                    calibrateData.pointObjects.push obj
                 index = index + 1
                 if index == 4
                     index = 0
@@ -243,6 +251,9 @@ PlotOptionsForm = React.createClass
             # state.canvas.add(point.obj)
             # console.log ""
             point.obj.bringToFront()
+        points = @state.calibrateData.pointObjects
+        for point in points
+            point.bringToFront()
         if state.canvas is not null
             state.canvas.renderAll()
 
@@ -253,6 +264,9 @@ PlotOptionsForm = React.createClass
             # state.canvas.remove(point.obj)
             # point.obj.setVisible(false)
             point.obj.sendBackwards(true)
+        points = @state.calibrateData.pointObjects
+        for point in points
+            point.sendBackwards()
         if state.canvas is not null
             state.canvas.renderAll()
 
@@ -453,9 +467,9 @@ DemoPage = React.createClass
             fill: "red"
             selectable: false
         state.canvas.add(circle)
-        callback(x,y,circle)
+        callback x,y,circle
 
-    putCalibratedPoint:(x,y)->
+    putCalibratedPoint:(x,y,callback)->
         R = 5
         rect = new fabric.Rect
             left : x - R // 2
@@ -465,6 +479,7 @@ DemoPage = React.createClass
             fill: "green"
             selectable: false
         state.canvas.add(rect)
+        callback x,y,rect
 
     image_click_handler: (e) ->
         console.log @state
@@ -481,8 +496,7 @@ DemoPage = React.createClass
 
             if s.name=="calibrate"
                 # put point to calibrate
-                s.callback x,y
-                @putCalibratedPoint(x,y)
+                @putCalibratedPoint(x,y,s.callback)
             else if s.name=="detect"
                 # detect plot
                 console.log "detecting ..."
