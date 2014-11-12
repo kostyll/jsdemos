@@ -71,12 +71,14 @@ PlotOptionsForm = React.createClass
         console.log event
 
     transformPixelToPoint: (pixel)->
+        # A|-------------X1----------------X2--------|C
+        # D|-----Y1------------------------------Y2--|E
         w = 600
         h = 400
         x = pixel.x
         y = h-pixel.y
 
-        console.log pixel
+        # console.log pixel
 
         s = @state
         c = s.calibrateData
@@ -90,17 +92,72 @@ PlotOptionsForm = React.createClass
         gy1 = Number s.gy1
         gy2 = Number s.gy2
 
-        console.log [
-            x1,x2,y1,y2
-        ]
+        # |AC|/|ACpx| = |X1X2|/|X1X2px|
+        # |AC| = |ACpx|*|X1X2|/|X1X2px|
 
-        console.log [
-            gx1,gx2,gy1,gy2
-        ]
+        # |AX1| / |AX1px| = |AC|/w
+        # |AX1| = |AC|*|AX1px|/w
 
-        px = gx1+((1.0*x)/Math.abs(x2-x1))*Math.abs(gx2-gx1)
+        # |X2C|/|X2Cpx| = |AC|/w
+        # |X2C| = |AC|*|X2Cpx|/w
+        AC = (1.0*(gx2-gx1))*w/(x2-x1)
+        # console.log "AC"
+        # console.log AC
 
-        py = gy1+(((1.0*(y))/Math.abs(y1-y2)))*Math.abs(gy2-gy1)
+        AX1px = (x1-0)
+        X2Cpx = (w-x2)
+
+        AX1 = AC*AX1px/w
+        X2C = AC*X2Cpx/w
+
+        # |DE|/|DEpx| = |Y1Y2|/|Y1Y2px|
+        # |DE| = |DEpx|*|Y1Y2|/|Y1Y2px|
+
+        # |DY1|/|DY1px| = |DE|/h
+        # |DY1| = |DY1px|*|DE|/h
+
+        # |Y2E|/|Y2Epx| = |DE|/h
+        # |Y2E| = |Y2Epx| * |DE| /h
+
+        DE = (1.0*(gy2-gy1))*h/(y2-y1)
+
+        DY1px = (y1-0)
+        Y2Epx = (h-y2)
+
+        DY1 = DE * DY1px / h
+        Y2E = DE * Y2Epx / h
+
+        rx1 = 0
+        rx2 = w
+
+        ry1 = 0
+        ry2 = h
+
+        rgx1 = gx1-AX1
+        rgx2 = gx2+X2C
+
+        rgy1 = gy1-DY1
+        rgy2 = gy2+Y2E
+
+        # console.log [
+        #     x1,x2,y1,y2
+        # ]
+
+        # console.log [
+        #     rx1,rx2,ry1,ry2
+        # ]
+
+        # console.log [
+        #     gx1,gx2,gy1,gy2
+        # ]
+
+        # console.log [
+        #     rgx1,rgx2,rgy1,rgy2
+        # ]
+
+        px = rgx1+((1.0*x)/Math.abs(rx2-rx1))*Math.abs(rgx2-rgx1)
+
+        py = rgy1+(((1.0*(y))/Math.abs(ry2-ry1)))*Math.abs(rgy2-rgy1)
         return {
                 x:px
                 y:py
