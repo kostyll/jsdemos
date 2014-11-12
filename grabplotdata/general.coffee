@@ -397,7 +397,18 @@ PlotData = React.createClass
     render: ()->
         <div className="row-fluid">
             <h3>Plot-data:</h3>
-            <div id="plot-data"></div>
+            <ul className="nav nav-tabs" role="tablist">
+                <li className="active"><a role="tab" data-toggle="tab" href="#table">Table</a></li>
+                <li><a role="tab" data-toggle="tab" href="#plot">Plot</a></li>
+            </ul>
+            <div className="tab-content">
+                <div className="tab-pane active" id="table">
+                    LALALA
+                </div>
+                <div className="tab-pane" id="plot">
+                    LALALA
+                </div>
+            </div>
         </div>
 
 
