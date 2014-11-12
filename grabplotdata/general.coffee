@@ -200,6 +200,8 @@ PlotOptionsForm = React.createClass
                     console.log "on changeState null"
                     calibrated = true
                     alert "Done"
+                    that.props.onChangeState null
+                    console.log "changed state to null"
                 calibrateData.currentIndex = index
                 that.setState
                     calibrated: calibrated
@@ -429,8 +431,27 @@ DemoPage = React.createClass
         plots.push plot_data
         @setState
             plots: plots
-        console.log "Plot added"
-        console.log @state
+        # console.log "Plot added"
+        # console.log @state
+
+        #copy calibrate data to new plot
+        parent_plot = @state.plots[@state.activePlot]
+        # console.log parent_plot
+
+        parent_calibrated = parent_plot.state.calibrated
+        parent_calibrateData = new Object(parent_plot.state.calibrateData)
+
+        # console.log "plot_data=,parent_calibrated=,parent_calibrateData"
+        # console.log plot_data
+        # console.log parent_calibrated
+        # console.log parent_calibrateData
+
+        plot_data.setState
+            calibrated: parent_calibrated
+            calibrateData: parent_calibrateData
+
+        # console.log "Compare..."
+        # console.log parent_plot.state.calibrateData is plot_data.state.calibrateData
 
     onAfterDidMountWorkSpace:(workspace)->
         @setState
@@ -494,7 +515,10 @@ DemoPage = React.createClass
 
             s = @state.state
 
-            if s.name=="calibrate"
+            if s is null
+                console.log "ups ..."
+
+            else if s.name=="calibrate"
                 # put point to calibrate
                 @putCalibratedPoint(x,y,s.callback)
             else if s.name=="detect"
@@ -588,8 +612,6 @@ ImageMatrix = (data) ->
     @source_data = data
     @width = data.width
     @height = data.height
-
-    # console.log @
 
 
 state = new State()
