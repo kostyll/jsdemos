@@ -382,11 +382,20 @@ WorkSpace = React.createClass
     render: ()->
         <div className="row-fluid">
             <h3>Workspace:</h3>
-            <div id="workspace"></div>
-            <span className="btn btn-file">
-                <input id="selected-file" type="file" className="form-control"/>
-            </span>
-            <hr/>
+            <ul className="nav nav-tabs" role="tablist">
+                <li className="active"><a role="tab" data-toggle="tab" href="#source_image_file">File</a></li>
+                <li><a role="tab" data-toggle="tab" href="#source_image_url">URL</a></li>
+            </ul>
+            <div className="tab-content">
+                <div className="tab-pane active" id="source_image_file">
+                    <span className="btn btn-file">
+                        <input id="selected-file" type="file" className="form-control"/>
+                    </span>
+                </div>
+                <div className="tab-pane" id="source_image_url">
+                    LALALA
+                </div>
+            </div>
             <div id="image-container">
                 <canvas  id="image" width="600px" height="400"></canvas>
             </div>
