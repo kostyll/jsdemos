@@ -527,14 +527,14 @@ PlotData = React.createClass
                     <br/>
                     <a
                         id="csv_export_link"
-                        href="#"
+                        className="btn btn-small btn-primary"
                         download={@getCurrentPlotName()+'.csv'}
                         onClick={new DataExporter().getExportCSVClickHandlerFromTextAreaForLink "csv_export_link","export_data"
                         }
                     >Export as CSV</a>
                     <a
                         id="excel_export_link"
-                        href="#"
+                        className="btn btn-small btn-primary"
                         download={@getCurrentPlotName()+'.xls'}
                         onClick={new DataExporter().getExportExcelClickHandlerFromTextAreaForLink "excel_export_link", "export_data"
                         }
