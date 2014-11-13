@@ -460,9 +460,11 @@ PlotData = React.createClass
         console.log @props.plotsDataProvider.state
         plot = @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot].state
         console.log "plots from plotsDataProvider"
+        csv_data = ""
         tableBody = <tbody>
                 {
                     plot.points.map (item,index)->
+                        csv_data += item.x+','+item.y+'\n'
                         return <tr>
                             <td>{index}</td>
                             <td>{item.x}</td>
@@ -470,7 +472,10 @@ PlotData = React.createClass
                         </tr>
                 }
         </tbody>
-        return tableBody
+        return {
+            tableBody:tableBody
+            csv: csv_data
+        }
 
     render: ()->
         console.log "RENDERING ..."
@@ -480,6 +485,7 @@ PlotData = React.createClass
             <h3>Plot-data:</h3>
             <ul className="nav nav-tabs" role="tablist">
                 <li className="active"><a role="tab" data-toggle="tab" href="#table">Table</a></li>
+                <li><a role="tab" data-toggle="tab" href="#csv">CSV data</a></li>
                 <li><a role="tab" data-toggle="tab" href="#plot">Plot</a></li>
             </ul>
             <div className="tab-content">
@@ -490,8 +496,12 @@ PlotData = React.createClass
                             <th>X</th>
                             <th>Y</th>
                         </thead>
-                        {rendered_table}
+                        {rendered_table.tableBody if rendered_table}
                     </table>
+                </div>
+                <div className="tab-pane" id="csv">
+                    <textarea value={rendered_table.csv if rendered_table}>
+                    </textarea>
                 </div>
                 <div className="tab-pane" id="plot">
                     Should draw plots ...
