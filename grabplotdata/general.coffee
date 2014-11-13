@@ -55,6 +55,17 @@ DataExporter::getExportExcelClickHandlerFromTextAreaForLink = (clicked_element_i
         context.link.href = href_data
     return wrapper
 
+DataExporter::getExportPNGClickHandlerFromDivForLink = (clicked_element_id,div_id)->
+    wrapper = ->
+        link = document.getElementById(clicked_element_id)
+        div = document.getElementById(div_id)
+        html2canvas div,
+            onrendered:(canvas)->
+                resultCanvasData = canvas.toDataURL('png')
+                link.href=resultCanvasData
+    return wrapper
+
+
 LabeledInput = React.createClass
     getInitialState:->
         {
@@ -510,7 +521,7 @@ PlotData = React.createClass
             graphic_points.push [point.x,point.y]
         if graphic_points.length == 0
             return
-        # result_data.push graphic_points
+        result_data.push graphic_points
 
         # options =
         #     xaxis:
@@ -582,7 +593,14 @@ PlotData = React.createClass
                                         height:300
                                         }>
                     </div>
-                {@refreshPlot()}
+                    {@refreshPlot()}
+                    <a
+                        id="png_export_link"
+                        className="btn btn-small btn-primary"
+                        download={@getCurrentPlotName()+'.png'}
+                        onClick={new DataExporter().getExportPNGClickHandlerFromDivForLink "png_export_link","plot-graphic"
+                        }
+                    >Export as PNG</a>
                 </div>
             </div>
         </div>
