@@ -13,15 +13,46 @@ DataExporter = ->
     }
     return
 
+DataExporter::getContextForExportClickHandlerFromTextAreaForLink = (clicked_element_id,area_id)->
+    return {
+        link: document.getElementById(clicked_element_id)
+        raw_data: document.getElementById(area_id).value
+    }
+
 DataExporter::getExportCSVClickHandlerFromTextAreaForLink = (clicked_element_id,area_id)->
     that = @
     wrapper = ()->
-        element = document.getElementById(area_id)
-        raw_data = element.value
-        link = document.getElementById(clicked_element_id)
-        href_data = that.uri.csv+Base64.encode64(raw_data)
-        link.href = href_data
+        context = that.getContextForExportClickHandlerFromTextAreaForLink(clicked_element_id,area_id)
+        href_data = that.uri.csv+Base64.encode64(context.raw_data)
+        context.link.href = href_data
         return
+    return wrapper
+
+DataExporter::_excell_format = (s,c) ->
+    s.replace new RegExp("{(\\w+)}", "g"),(m,p)->
+        c[p]
+
+DataExporter::_prepare_csv_string_to_excell_table = (raw_data)->
+    result = ""
+    for line in raw_data.split('\n')
+        result += "<tr>"
+        cells = line.split(",")
+        for cell in cells
+            result += "<td>"+cell+"</td>"
+        result += "</tr>"
+    result
+
+DataExporter::getExportExcelClickHandlerFromTextAreaForLink = (clicked_element_id,area_id,name)->
+    that = @
+    wrapper = ()->
+        context = that.getContextForExportClickHandlerFromTextAreaForLink(clicked_element_id,area_id)
+
+        excel_context = {
+            worksheet: name or "WorkSheet0"
+            table: that._prepare_csv_string_to_excell_table(context.raw_data)
+        }
+        href_data = that.uri.excel+Base64.encode64(that._excell_format(that.template.excel,excel_context))
+        context.link.href = href_data
     return wrapper
 
 LabeledInput = React.createClass
@@ -466,9 +497,9 @@ PlotData = React.createClass
         console.log @props.plotsDataProvider.state.plots
         console.log @props.plotsDataProvider.state.activePlot
         if @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot] is not undefined
-            return @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot].state.name+'.csv'
+            return @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot].state.name
         else
-            return "untitled.csv"
+            return "untitled"
 
     render: ()->
         rendered_table = @renderPlotPoints()
@@ -476,7 +507,7 @@ PlotData = React.createClass
             <h3>Plot-data:</h3>
             <ul className="nav nav-tabs" role="tablist">
                 <li className="active"><a role="tab" data-toggle="tab" href="#table">Table</a></li>
-                <li><a role="tab" data-toggle="tab" href="#csv">CSV data</a></li>
+                <li><a role="tab" data-toggle="tab" href="#csv">Export</a></li>
                 <li><a role="tab" data-toggle="tab" href="#plot">Plot</a></li>
             </ul>
             <div className="tab-content">
@@ -491,16 +522,23 @@ PlotData = React.createClass
                     </table>
                 </div>
                 <div className="tab-pane" id="csv">
-                    <textarea id="csv_export_data" value={rendered_table.csv if rendered_table}>
+                    <textarea id="export_data" value={rendered_table.csv if rendered_table}>
                     </textarea>
                     <br/>
                     <a
                         id="csv_export_link"
                         href="#"
-                        download={@getCurrentPlotName()}
-                        onClick={new DataExporter().getExportCSVClickHandlerFromTextAreaForLink "csv_export_link","csv_export_data"
+                        download={@getCurrentPlotName()+'.csv'}
+                        onClick={new DataExporter().getExportCSVClickHandlerFromTextAreaForLink "csv_export_link","export_data"
                         }
                     >Export as CSV</a>
+                    <a
+                        id="excel_export_link"
+                        href="#"
+                        download={@getCurrentPlotName()+'.xls'}
+                        onClick={new DataExporter().getExportExcelClickHandlerFromTextAreaForLink "excel_export_link", "export_data"
+                        }
+                    >Export as Excel</a>
                 </div>
                 <div className="tab-pane" id="plot">
                     Should draw plots ...
