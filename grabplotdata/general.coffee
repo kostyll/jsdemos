@@ -349,6 +349,7 @@ WorkSpace = React.createClass
         return {
             plot_url: null
         }
+
     selectFileHandler:(event)->
         that = @
         state.file_image = event.target.files[0]
@@ -438,8 +439,44 @@ WorkSpace = React.createClass
 
 
 PlotData = React.createClass
+    getInitialState:->
+        return {
+            changed: new Date()
+        }
+    componentDidMount:->
+        # making callback to make Root component know about self
+        @props.tellRootAboutSelf(@)
+
+
+    refresh:->
+        console.log "refreshing ..."
+        @setState
+            changed: new Date()
+
+    renderPlotPoints:->
+        console.log "Rendering table"
+        if @props.plotsDataProvider.state.plots.length == 0
+            return
+        console.log @props.plotsDataProvider.state
+        plot = @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot].state
+        console.log "plots from plotsDataProvider"
+        tableBody = <tbody>
+                {
+                    plot.points.map (item,index)->
+                        return <tr>
+                            <td>{index}</td>
+                            <td>{item.x}</td>
+                            <td>{item.y}</td>
+                        </tr>
+                }
+        </tbody>
+        return tableBody
+
     render: ()->
-        <div className="row-fluid">
+        console.log "RENDERING ..."
+        rendered_table = @renderPlotPoints()
+        console.log rendered_table
+        return <div className="row-fluid">
             <h3>Plot-data:</h3>
             <ul className="nav nav-tabs" role="tablist">
                 <li className="active"><a role="tab" data-toggle="tab" href="#table">Table</a></li>
@@ -447,10 +484,17 @@ PlotData = React.createClass
             </ul>
             <div className="tab-content">
                 <div className="tab-pane active" id="table">
-                    LALALA
+                    <table id="plot-points" className="table table-bordered">
+                        <thead>
+                            <th>Index</th>
+                            <th>X</th>
+                            <th>Y</th>
+                        </thead>
+                        {rendered_table}
+                    </table>
                 </div>
                 <div className="tab-pane" id="plot">
-                    LALALA
+                    Should draw plots ...
                 </div>
             </div>
         </div>
@@ -467,6 +511,10 @@ DemoPage = React.createClass
             state:null
             image:null
         }
+
+    getPlotDataInstance: (instance) ->
+        @setState
+            plotDataInstance: instance
 
     onChangeState:(state)->
         console.log state
@@ -544,6 +592,7 @@ DemoPage = React.createClass
             selectable: false
         state.canvas.add(circle)
         callback x,y,circle
+        @state.plotDataInstance.refresh()
 
     putCalibratedPoint:(x,y,callback)->
         R = 5
@@ -608,7 +657,10 @@ DemoPage = React.createClass
                         onAfterDidMountWorkSpace={@onAfterDidMountWorkSpace}
                         onImageLoad={@onImageLoad}
                     />
-                    <PlotData />
+                    <PlotData
+                        tellRootAboutSelf={@getPlotDataInstance}
+                        plotsDataProvider={@}
+                    />
                 </div>
                 <div className="span2">
                     <ToolBox
