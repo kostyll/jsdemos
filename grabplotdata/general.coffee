@@ -616,6 +616,17 @@ DemoPage = React.createClass
         state.canvas.add(rect)
         callback x,y,rect
 
+    detectplot:(x,y)->
+        console.log "detecting ..."
+        context = state.canvas.getContext("2d")
+        image_data = context.getImageData x,y,1,1
+        data = image_data.data
+        console.log data
+        d = [data[0],data[1],data[2]].join(",")
+        color = new fabric.Color('rgb('+d+')')
+        alert color.toHex()
+        console.log "Image data="
+
     image_click_handler: (e) ->
         console.log @state
         if @state.image != null
@@ -637,7 +648,7 @@ DemoPage = React.createClass
                 @putCalibratedPoint(x,y,s.callback)
             else if s.name=="detect"
                 # detect plot
-                console.log "detecting ..."
+                @detectplot(x,y)
 
             else if s.name == "select"
                 # select custom points
