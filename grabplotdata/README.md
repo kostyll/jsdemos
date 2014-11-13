@@ -3,3 +3,4 @@ TODO:
 * improve graphic detection feature
 * draw grabed graphic from points data
 * add export to png feature
+* add interpolation/extrapolation feature from grabbed points data

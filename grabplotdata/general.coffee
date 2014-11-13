@@ -493,6 +493,42 @@ PlotData = React.createClass
             csv: csv_data
         }
 
+    refreshPlot:->
+        # console.log "drawing plot"
+        if @props.plotsDataProvider.state.plots.length == 0
+            return
+        currentPlot = @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot].state
+
+
+        calibrateData = currentPlot.calibrateData
+        points = currentPlot.points
+
+        result_data = [ ]
+        graphic_points = []
+
+        for point in points
+            graphic_points.push [point.x,point.y]
+        if graphic_points.length == 0
+            return
+        # result_data.push graphic_points
+
+        # options =
+        #     xaxis:
+        #         min: calibrateData.x1
+        #         max: calibrateData.x2
+        #     yaxis:
+        #         min: calibrateData.y1
+        #         max: calibrateData.y2
+        # console.log result_data
+        # console.log options
+
+        $.plot(
+               $("#plot-graphic"),
+               result_data,
+               # options
+               )
+        return
+
     getCurrentPlotName:->
         console.log @props.plotsDataProvider.state.plots
         console.log @props.plotsDataProvider.state.activePlot
@@ -540,8 +576,13 @@ PlotData = React.createClass
                         }
                     >Export as Excel</a>
                 </div>
-                <div className="tab-pane" id="plot">
-                    Should draw plots ...
+                <div className="tab-pane" id="plot" >
+                    <div id="plot-graphic" style={
+                                        width:500,
+                                        height:300
+                                        }>
+                    </div>
+                {@refreshPlot()}
                 </div>
             </div>
         </div>
