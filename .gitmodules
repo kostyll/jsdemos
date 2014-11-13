@@ -1,3 +1,6 @@
 [submodule "excellentexport"]
 	path = excellentexport
 	url = git@github.com:jmaister/excellentexport.git
+[submodule "thirdparty/base64.coffee"]
+	path = thirdparty/base64.coffee
+	url = git@github.com:rwz/base64.coffee.git

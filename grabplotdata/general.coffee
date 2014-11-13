@@ -2,6 +2,11 @@
 # cjsx -b -p -c general.coffee > general.js
 # https://github.com/jsdf/coffee-react
 
+uri = {
+    excel: 'data:application/vnd.ms-excel;base64,',
+    csv: 'data:application/csv;base64,'
+}
+
 LabeledInput = React.createClass
     getInitialState:->
         {
@@ -10,8 +15,6 @@ LabeledInput = React.createClass
         }
 
     onChange: (event)->
-        # console.log event
-        # console.log event.target.value
         @setState
             value: event.target.value
         @props.onChange(@props.name,event.target.value)
@@ -30,8 +33,6 @@ LabeledInput = React.createClass
 
 PlotOptionsForm = React.createClass
     getInitialState: ()->
-        console.log "Plot props"
-        console.log @props
         return {
             activated: @props.activated
             color: null
@@ -79,8 +80,6 @@ PlotOptionsForm = React.createClass
         x = pixel.x
         y = h-pixel.y
 
-        # console.log pixel
-
         s = @state
         c = s.calibrateData
         x1 = Number c.x1
@@ -102,8 +101,6 @@ PlotOptionsForm = React.createClass
         # |X2C|/|X2Cpx| = |AC|/w
         # |X2C| = |AC|*|X2Cpx|/w
         AC = (1.0*(gx2-gx1))*w/(x2-x1)
-        # console.log "AC"
-        # console.log AC
 
         AX1px = (x1-0)
         X2Cpx = (w-x2)
@@ -140,28 +137,10 @@ PlotOptionsForm = React.createClass
         rgy1 = gy1-DY1
         rgy2 = gy2+Y2E
 
-        # console.log [
-        #     x1,x2,y1,y2
-        # ]
-
-        # console.log [
-        #     rx1,rx2,ry1,ry2
-        # ]
-
-        # console.log [
-        #     gx1,gx2,gy1,gy2
-        # ]
-
-        # console.log [
-        #     rgx1,rgx2,rgy1,rgy2
-        # ]
-
         px = rgx1+((1.0*x)/Math.abs(rx2-rx1))*Math.abs(rgx2-rgx1)
 
         py = rgy1+(((1.0*(y))/Math.abs(ry2-ry1)))*Math.abs(rgy2-rgy1)
-        # console.log [
-        #     px,py
-        # ]
+
         return {
                 x:px
                 y:py
@@ -174,7 +153,6 @@ PlotOptionsForm = React.createClass
         @props.onChangeState
             name: "calibrate"
             callback: (x,y,obj)->
-                console.log arguments
                 calibrateData = that.state.calibrateData
                 index = calibrateData.currentIndex
                 calibrated = false
@@ -197,11 +175,9 @@ PlotOptionsForm = React.createClass
                 if index == 4
                     index = 0
                     that.props.onChangeState null
-                    console.log "on changeState null"
                     calibrated = true
                     alert "Done"
                     that.props.onChangeState null
-                    console.log "changed state to null"
                 calibrateData.currentIndex = index
                 that.setState
                     calibrated: calibrated
@@ -235,8 +211,6 @@ PlotOptionsForm = React.createClass
                 point = that.transformPixelToPoint(pixel)
                 point.obj = obj
                 points.push point
-                console.log "Point"
-                console.log point
                 # alert point
                 that.setState
                     points: points
@@ -247,7 +221,6 @@ PlotOptionsForm = React.createClass
         @setState state
 
     showOwnPoints:->
-        console.log "Showing points"
         points = @state.points
         for point in points
             # state.canvas.add(point.obj)
@@ -260,7 +233,6 @@ PlotOptionsForm = React.createClass
             state.canvas.renderAll()
 
     hideOwnPoints:->
-        console.log "Hiding points"
         points = @state.points
         for point in points
             # state.canvas.remove(point.obj)
@@ -301,7 +273,7 @@ PlotOptionsForm = React.createClass
 
 ToolBox = React.createClass
     getInitialState:->
-        console.log @props
+
         items = []
         @props.items.forEach (item,index,arr) ->
             items.push
@@ -354,8 +326,6 @@ WorkSpace = React.createClass
         that = @
         state.file_image = event.target.files[0]
         selected_file = document.getElementById("selected-file")
-        console.log "Uploading image"
-        console.log state.file_image
         reader = new FileReader()
         reader.onload = (e)->
             image = new Image()
@@ -384,17 +354,15 @@ WorkSpace = React.createClass
 
     onLoadImagePlot:->
         that = @
-        console.log "Loading image plot"
-        console.log @state.plot_url
         image = new Image()
         image.onload = ->
-            console.log "Image loaded"
             imgObj = new fabric.Image(image)
             imgObj.set
                 angle: 0
                 width: 600
                 height: 400
                 selectable: false
+                crossOrigin: ''
             state.canvas.centerObject(imgObj)
             state.canvas.add(imgObj)
             state.canvas.renderAll()
@@ -439,14 +407,15 @@ WorkSpace = React.createClass
 
 
 PlotData = React.createClass
+
     getInitialState:->
         return {
             changed: new Date()
         }
+
     componentDidMount:->
         # making callback to make Root component know about self
         @props.tellRootAboutSelf(@)
-
 
     refresh:->
         console.log "refreshing ..."
@@ -457,9 +426,8 @@ PlotData = React.createClass
         console.log "Rendering table"
         if @props.plotsDataProvider.state.plots.length == 0
             return
-        console.log @props.plotsDataProvider.state
+
         plot = @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot].state
-        console.log "plots from plotsDataProvider"
         csv_data = ""
         tableBody = <tbody>
                 {
@@ -477,10 +445,16 @@ PlotData = React.createClass
             csv: csv_data
         }
 
+    getCurrentPlotName:->
+        console.log @props.plotsDataProvider.state.plots
+        console.log @props.plotsDataProvider.state.activePlot
+        if @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot] is not undefined
+            return @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot].state.name+'.csv'
+        else
+            return "untitled.csv"
+
     render: ()->
-        console.log "RENDERING ..."
         rendered_table = @renderPlotPoints()
-        console.log rendered_table
         return <div className="row-fluid">
             <h3>Plot-data:</h3>
             <ul className="nav nav-tabs" role="tablist">
@@ -500,8 +474,26 @@ PlotData = React.createClass
                     </table>
                 </div>
                 <div className="tab-pane" id="csv">
-                    <textarea value={rendered_table.csv if rendered_table}>
+                    <textarea id="csv_export_data" value={rendered_table.csv if rendered_table}>
                     </textarea>
+                    <br/>
+                    <a
+                        id="csv_export_link"
+                        href="#"
+                        download={@getCurrentPlotName()}
+                        onClick={
+                            ()->
+                                console.log "clicked"
+                                console.log @
+                                csv_export_link = document.getElementById("csv_export_link")
+                                console.log csv_export_link
+                                csv_area = document.getElementById("csv_export_data")
+                                csv_data = csv_area.value
+                                console.log csv_data
+                                csv_export_link.href = uri.csv+Base64.encode64(csv_data)
+                                return
+                        }
+                    >Export as CSV</a>
                 </div>
                 <div className="tab-pane" id="plot">
                     Should draw plots ...
@@ -532,8 +524,6 @@ DemoPage = React.createClass
             state:state
 
     onActivatePlot:(index)->
-        console.log "Activating..."
-        console.log index
         @state.plots[@state.activePlot].setState
             activated: false
         @setState
@@ -544,27 +534,16 @@ DemoPage = React.createClass
         plots.push plot_data
         @setState
             plots: plots
-        # console.log "Plot added"
-        # console.log @state
 
         #copy calibrate data to new plot
         parent_plot = @state.plots[@state.activePlot]
-        # console.log parent_plot
 
         parent_calibrated = parent_plot.state.calibrated
         parent_calibrateData = new Object(parent_plot.state.calibrateData)
 
-        # console.log "plot_data=,parent_calibrated=,parent_calibrateData"
-        # console.log plot_data
-        # console.log parent_calibrated
-        # console.log parent_calibrateData
-
         plot_data.setState
             calibrated: parent_calibrated
             calibrateData: parent_calibrateData
-
-        # console.log "Compare..."
-        # console.log parent_plot.state.calibrateData is plot_data.state.calibrateData
 
     onAfterDidMountWorkSpace:(workspace)->
         @setState
