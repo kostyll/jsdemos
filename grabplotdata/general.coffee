@@ -2,10 +2,27 @@
 # cjsx -b -p -c general.coffee > general.js
 # https://github.com/jsdf/coffee-react
 
-uri = {
-    excel: 'data:application/vnd.ms-excel;base64,',
-    csv: 'data:application/csv;base64,'
-}
+DataExporter = ->
+    @uri = {
+        excel: 'data:application/vnd.ms-excel;base64,',
+        csv: 'data:application/csv;base64,'
+    }
+
+    @template = {
+        excel: '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>{table}</table></body></html>'
+    }
+    return
+
+DataExporter::getExportCSVClickHandlerFromTextAreaForLink = (clicked_element_id,area_id)->
+    that = @
+    wrapper = ()->
+        element = document.getElementById(area_id)
+        raw_data = element.value
+        link = document.getElementById(clicked_element_id)
+        href_data = that.uri.csv+Base64.encode64(raw_data)
+        link.href = href_data
+        return
+    return wrapper
 
 LabeledInput = React.createClass
     getInitialState:->
@@ -481,17 +498,7 @@ PlotData = React.createClass
                         id="csv_export_link"
                         href="#"
                         download={@getCurrentPlotName()}
-                        onClick={
-                            ()->
-                                console.log "clicked"
-                                console.log @
-                                csv_export_link = document.getElementById("csv_export_link")
-                                console.log csv_export_link
-                                csv_area = document.getElementById("csv_export_data")
-                                csv_data = csv_area.value
-                                console.log csv_data
-                                csv_export_link.href = uri.csv+Base64.encode64(csv_data)
-                                return
+                        onClick={new DataExporter().getExportCSVClickHandlerFromTextAreaForLink "csv_export_link","csv_export_data"
                         }
                     >Export as CSV</a>
                 </div>
