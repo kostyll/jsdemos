@@ -345,6 +345,10 @@ ToolBox = React.createClass
 
 
 WorkSpace = React.createClass
+    getInitialState:->
+        return {
+            plot_url: null
+        }
     selectFileHandler:(event)->
         that = @
         state.file_image = event.target.files[0]
@@ -354,8 +358,6 @@ WorkSpace = React.createClass
         reader = new FileReader()
         reader.onload = (e)->
             image = new Image()
-
-            image.id ="image-data"
             image.onload = ->
                 imgObj = new fabric.Image(image)
                 imgObj.set
@@ -373,6 +375,31 @@ WorkSpace = React.createClass
             image.src = reader.result
             return
         reader.readAsDataURL(state.file_image)
+        return
+
+    onChagePlotUrl:(event)->
+        @setState
+            plot_url:event.target.value
+
+    onLoadImagePlot:->
+        that = @
+        console.log "Loading image plot"
+        console.log @state.plot_url
+        image = new Image()
+        image.onload = ->
+            console.log "Image loaded"
+            imgObj = new fabric.Image(image)
+            imgObj.set
+                angle: 0
+                width: 600
+                height: 400
+                selectable: false
+            state.canvas.centerObject(imgObj)
+            state.canvas.add(imgObj)
+            state.canvas.renderAll()
+            that.props.onImageLoad(imgObj)
+            return
+        image.src = @state.plot_url
         return
 
     componentDidMount:->
@@ -393,7 +420,15 @@ WorkSpace = React.createClass
                     </span>
                 </div>
                 <div className="tab-pane" id="source_image_url">
-                    LALALA
+                    <form className="form-horizontal">
+                        <div className="control-group">
+                            <label className="control-label" for="source_url">Plot url</label>
+                            <div className="controls">
+                                <input type="text" className="input"} id="source_url" onChange={@onChagePlotUrl} placeholder="http://imageurl" />
+                                <a className="btn btn-small btn-primary" onClick={@onLoadImagePlot}>Load</a>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
             <div id="image-container">
