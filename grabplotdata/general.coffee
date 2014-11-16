@@ -377,37 +377,20 @@ ToolBox = React.createClass
 
 ColorsPanel = React.createClass
     renderColors:(colors)->
-        result = <div className="function get-color">
-                      <h3 className="function-title">Dominant Color</h3>
-                      <div className="swatches">
-                        <div 
-                            className="swatch" 
-                                style={
-                                    backgroundColor: "rgb(#{colors.dominantColor[0]}, #{colors.dominantColor[1]}, #{colors.dominantColor[2]})"
-                                    width:20
-                                    height:20
-                                }
-                        ></div>
-                      </div>
-                    </div>
-        result += <div className="function get-palette">
-                      <h3 className="function-title">Palette</h3>
-                      <div className="function-output">
-                        <div className="swatches">
+        return <table>
+                        <tr>        
                             {colors.palette.map (item,index)->
-                                <div 
-                                    className="swatch" 
+
+                                    <td className="swatch" 
                                         style={
                                             backgroundColor: "rgb(#{item[0]}, #{item[1]}, #{item[2]})"
                                             width:20
                                             height:20
                                         }
-                                ></div>
+                                    ></td>
                             }
-                        </div>
-                      </div>
-                    </div>
-        result
+                        </tr>                            
+                 </table>
     
     render:->
         colors = @props.colors
