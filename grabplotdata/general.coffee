@@ -375,13 +375,72 @@ ToolBox = React.createClass
         </div>
 
 
+ColorsPanel = React.createClass
+    renderColors:(colors)->
+        result = <div className="function get-color">
+                      <h3 className="function-title">Dominant Color</h3>
+                      <div className="swatches">
+                        <div 
+                            className="swatch" 
+                                style={
+                                    backgroundColor: "rgb(#{colors.dominantColor[0]}, #{colors.dominantColor[1]}, #{colors.dominantColor[2]})"
+                                    width:20
+                                    height:20
+                                }
+                        ></div>
+                      </div>
+                    </div>
+        result += <div className="function get-palette">
+                      <h3 className="function-title">Palette</h3>
+                      <div className="function-output">
+                        <div className="swatches">
+                            {colors.palette.map (item,index)->
+                                <div 
+                                    className="swatch" 
+                                        style={
+                                            backgroundColor: "rgb(#{item[0]}, #{item[1]}, #{item[2]})"
+                                            width:20
+                                            height:20
+                                        }
+                                ></div>
+                            }
+                        </div>
+                      </div>
+                    </div>
+        result
+    
+    render:->
+        colors = @props.colors
+        if not (colors is null)
+            return <div>
+                <h3>Colors:</h3>
+                    {@renderColors(colors)}
+            </div>
+        else
+            return <div>
+                <h3>Colors:</h3>
+            </div>
+            
+
 WorkSpace = React.createClass
     getInitialState:->
         return {
             plot_url: null
+            colors: null
+        }
+
+    getColors:(image,colorscount=15)->
+        colorThief = new ColorThief()
+        dominantColor = colorThief.getColor image
+        palette = colorThief.getPalette image,colorscount
+
+        return {
+            dominantColor:dominantColor
+            palette:palette
         }
 
     selectFileHandler:(event)->
+        console.log "Selecting file..."
         that = @
         state.file_image = event.target.files[0]
         selected_file = document.getElementById("selected-file")
@@ -389,6 +448,7 @@ WorkSpace = React.createClass
         reader.onload = (e)->
             image = new Image()
             image.onload = ->
+                console.log "Image selected"
                 imgObj = new fabric.Image(image)
                 imgObj.set
                     angle: 0
@@ -399,6 +459,12 @@ WorkSpace = React.createClass
                 state.canvas.add(imgObj)
 
                 state.canvas.renderAll()
+
+                that.setState
+                    colors: that.getColors(image)
+
+                that.render()
+
                 that.props.onImageLoad(imgObj)
                 return
 
@@ -412,6 +478,7 @@ WorkSpace = React.createClass
             plot_url:event.target.value
 
     onLoadImagePlot:->
+        console.log "Loading file..."
         that = @
         image = new Image()
         image.onload = ->
@@ -459,6 +526,7 @@ WorkSpace = React.createClass
                     </form>
                 </div>
             </div>
+            <ColorsPanel colors={@state.colors} />
             <div id="image-container">
                 <canvas  id="image" width="600px" height="400"></canvas>
             </div>

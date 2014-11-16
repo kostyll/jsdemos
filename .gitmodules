@@ -7,3 +7,6 @@
 [submodule "thirdparty/flot"]
 	path = thirdparty/flot
 	url = git@github.com:flot/flot.git
+[submodule "thirdparty/html2canvas"]
+	path = thirdparty/html2canvas
+	url = git@github.com:niklasvh/html2canvas.git
