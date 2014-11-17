@@ -342,11 +342,13 @@ ToolBox = React.createClass
         return {
             activeItem: 0
             items: items
+            displayAll: false
         }
 
     componentDidMount:->
 
         console.log @props
+        @props.onInstallToolbox @
 
     addNewPlot:->
         items = @state.items
@@ -356,11 +358,27 @@ ToolBox = React.createClass
         @setState
             items: items
 
+    changeDisplayAll:->
+        currentValue = @state.displayAll
+        if currentValue == true
+            currentValue = false
+        else
+            currentValue = true
+
+        @setState
+            displayAll:currentValue
+        console.log "checked=>"
+        console.log currentValue
+
+        @props.root.state.plotDataInstance.refreshPlot()
+
     render:->
         that = @
         <div id="toolbox">
             <h3>Toolbox:</h3>
             <button className="btn btn-large btn-primary" onClick={@addNewPlot}>Add new plot</button>
+            <label for="displayAll" >Display all</label>
+            <input id="displayAll" type="checkbox" checked={@state.displayAll} onChange={@changeDisplayAll} />
             {@state.items.map (item)->
                 return <PlotOptionsForm
                     id={item.index}
@@ -572,34 +590,35 @@ PlotData = React.createClass
         # console.log "drawing plot"
         if @props.plotsDataProvider.state.plots.length == 0
             return
-        currentPlot = @props.plotsDataProvider.state.plots[@props.plotsDataProvider.state.activePlot].state
 
+        console.log "Toolbox ==>"
+        console.log @props.plotsDataProvider.state.toolbox
+        if not (@props.plotsDataProvider.state.toolbox is null)
+            console.log "Selecting toolbox property..."
+            displayAll = not @props.plotsDataProvider.state.toolbox.state.displayAll
+        else
+            displayAll = false
+        console.log "DisplayAll=>"
+        console.log displayAll
 
-        calibrateData = currentPlot.calibrateData
-        points = currentPlot.points
+        plots = []
+        activePlot = @props.plotsDataProvider.state.activePlot
 
-        result_data = [ ]
-        graphic_points = []
+        @props.plotsDataProvider.state.plots.map (item,index)->
+            if displayAll or (not displayAll and index == activePlot)
 
-        for point in points
-            graphic_points.push [point.x,point.y]
-        if graphic_points.length == 0
-            return
-        result_data.push graphic_points
+                points = []
+                currentPlotPoints = item.state.points
+                currentPlotPoints.map (item,index)->
+                    points.push [item.x, item.y]
+                plots.push points
 
-        # options =
-        #     xaxis:
-        #         min: calibrateData.x1
-        #         max: calibrateData.x2
-        #     yaxis:
-        #         min: calibrateData.y1
-        #         max: calibrateData.y2
-        # console.log result_data
-        # console.log options
+        console.log "Plots ====>"
+        console.log plots
 
         $.plot(
                $("#plot-graphic"),
-               result_data,
+               plots,
                # options
                )
         return
@@ -680,6 +699,7 @@ DemoPage = React.createClass
             putNewPoints: true
             state:null
             image:null
+            toolbox:null
         }
 
     getPlotDataInstance: (instance) ->
@@ -696,6 +716,7 @@ DemoPage = React.createClass
             activated: false
         @setState
             activePlot: index
+        @state.plotDataInstance.refreshPlot()
 
     onAfterDidMountPlot:(plot_data)->
         plots = @state.plots
@@ -728,6 +749,10 @@ DemoPage = React.createClass
             plot.setState
                 calibrated: false
         return
+
+    onInstallToolbox:(toolbox_instance)->
+        @setState
+            toolbox: toolbox_instance
 
     switchOnPlotPointsPut:->
         @setState
@@ -842,6 +867,8 @@ DemoPage = React.createClass
                         onAfterDidMountPlot={@onAfterDidMountPlot}
                         onActivatePlot={@onActivatePlot}
                         onChangeState={@onChangeState}
+                        onInstallToolbox={@onInstallToolbox}
+                        root={@}
                     />
                 </div>
             </div>
