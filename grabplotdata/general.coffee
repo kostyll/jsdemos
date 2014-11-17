@@ -377,11 +377,16 @@ ToolBox = React.createClass
 
 ColorsPanel = React.createClass
     renderColors:(colors)->
+        console.log colors
+        dominantColor = colors.dominantColor
+        colors = colors.palette
+        colors.push dominantColor
+        console.log colors
         return <table>
-                        <tr>        
-                            {colors.palette.map (item,index)->
+                        <tr>
+                            {colors.map (item,index)->
 
-                                    <td className="swatch" 
+                                    <td className="swatch"
                                         style={
                                             backgroundColor: "rgb(#{item[0]}, #{item[1]}, #{item[2]})"
                                             width:20
@@ -389,9 +394,24 @@ ColorsPanel = React.createClass
                                         }
                                     ></td>
                             }
-                        </tr>                            
+                        </tr>
+                        <tr>
+                            {colors.map (item,index)->
+                                    # color = (item[0]+item[1]+item[2]) // 3
+                                    color = [item[0],item[1],item[2]]
+                                    console.log color
+
+                                    <td className="swatch"
+                                        style={
+                                            backgroundColor: "rgb(#{color[0]}, #{color[1]}, #{color[2]})"
+                                            width:20
+                                            height:20
+                                        }
+                                    ></td>
+                            }
+                        </tr>
                  </table>
-    
+
     render:->
         colors = @props.colors
         if not (colors is null)
@@ -403,7 +423,7 @@ ColorsPanel = React.createClass
             return <div>
                 <h3>Colors:</h3>
             </div>
-            
+
 
 WorkSpace = React.createClass
     getInitialState:->
@@ -422,6 +442,26 @@ WorkSpace = React.createClass
             palette:palette
         }
 
+    loadImage:(image,that)->
+        imgObj = new fabric.Image(image)
+        imgObj.set
+            angle: 0
+            width: 600
+            height: 400
+            selectable: false
+        state.canvas.centerObject(imgObj)
+        state.canvas.add(imgObj)
+
+        state.canvas.renderAll()
+
+        that.setState
+            colors: that.getColors(image)
+
+        that.render()
+
+        that.props.onImageLoad(imgObj)
+        return
+
     selectFileHandler:(event)->
         console.log "Selecting file..."
         that = @
@@ -432,25 +472,8 @@ WorkSpace = React.createClass
             image = new Image()
             image.onload = ->
                 console.log "Image selected"
-                imgObj = new fabric.Image(image)
-                imgObj.set
-                    angle: 0
-                    width: 600
-                    height: 400
-                    selectable: false
-                state.canvas.centerObject(imgObj)
-                state.canvas.add(imgObj)
-
-                state.canvas.renderAll()
-
-                that.setState
-                    colors: that.getColors(image)
-
-                that.render()
-
-                that.props.onImageLoad(imgObj)
+                that.loadImage(image,that)
                 return
-
             image.src = reader.result
             return
         reader.readAsDataURL(state.file_image)
@@ -465,17 +488,7 @@ WorkSpace = React.createClass
         that = @
         image = new Image()
         image.onload = ->
-            imgObj = new fabric.Image(image)
-            imgObj.set
-                angle: 0
-                width: 600
-                height: 400
-                selectable: false
-                crossOrigin: ''
-            state.canvas.centerObject(imgObj)
-            state.canvas.add(imgObj)
-            state.canvas.renderAll()
-            that.props.onImageLoad(imgObj)
+            that.loadImage(image,that)
             return
         image.src = @state.plot_url
         return
@@ -699,6 +712,10 @@ DemoPage = React.createClass
         plot_data.setState
             calibrated: parent_calibrated
             calibrateData: parent_calibrateData
+            gx1: parent_plot.state.gx1
+            gx2: parent_plot.state.gx2
+            gy1: parent_plot.state.gy1
+            gy2: parent_plot.state.gy2
 
     onAfterDidMountWorkSpace:(workspace)->
         @setState
@@ -763,6 +780,7 @@ DemoPage = React.createClass
 
     image_click_handler: (e) ->
         console.log @state
+        console.log state.canvas
         if @state.image != null
             console.log "Image clicked"
             console.log e
@@ -865,8 +883,8 @@ State::change_image = (image_html_el) ->
 
 
 State::get_image_coordinates_from_client = (clientX,clientY) ->
-    x = clientX - @image_left
-    y = clientY - @image_top
+    x = clientX - @canvas._offset.left
+    y = clientY - @canvas._offset.top
     return [x,y]
 
 
