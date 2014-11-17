@@ -7,3 +7,6 @@
 [submodule "thirdparty/html2canvas"]
 	path = thirdparty/html2canvas
 	url = git@github.com:niklasvh/html2canvas.git
+[submodule "thirdparty/requirejs"]
+	path = thirdparty/requirejs
+	url = git@github.com:jrburke/requirejs.git
