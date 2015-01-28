@@ -9,3 +9,7 @@ For starting using these demos you need to run the following commands:
 * git submodule update
 * python -m SimpleHTTPServer
 * run browser at 127.0.0.1:8000
+
+The list of the demos:
+
+* http://127.0.0.1:8000/grabplotdata/ - Plot grabber
